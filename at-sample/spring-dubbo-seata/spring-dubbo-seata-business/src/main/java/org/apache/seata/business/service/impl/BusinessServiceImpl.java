@@ -40,7 +40,7 @@ public class BusinessServiceImpl implements BusinessService {
     private final Random random = new Random();
 
     @Override
-    @GlobalTransactional(timeoutMills = 300000, name = "spring-dubbo-tx")
+    @GlobalTransactional(timeoutMills = 300000, name = "spring-dubbo-tx") // 打开全局事物
     public void purchase(String userId, String commodityCode, int orderCount) {
         LOGGER.info("purchase begin ... xid: " + RootContext.getXID());
         storageService.deduct(commodityCode, orderCount);
