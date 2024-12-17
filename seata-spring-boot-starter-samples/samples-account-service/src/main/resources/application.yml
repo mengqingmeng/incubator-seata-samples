@@ -4,9 +4,9 @@ server:
 spring:
   datasource:
     driver-class-name: com.mysql.jdbc.Driver
-    url: jdbc:mysql://127.0.0.1:3306/seata?useSSL=false&useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true
+    url: jdbc:mysql://127.0.0.1:3306/seata_server?useSSL=false&useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true
     username: root
-    password: 123456
+    password: root
   application:
     name: dubbo-account-example
 
@@ -97,8 +97,8 @@ seata:
       namespace:
       cluster: default
       group: SEATA_GROUP
-      username: nacos
-      password: nacos
+      username:
+      password:
   config:
     file:
       name: file.conf
@@ -107,6 +107,6 @@ seata:
       namespace:
       server-addr: localhost:8848
       group: SEATA_GROUP
-      username: nacos
-      password: nacos
-      dataId: nacos-server.properties
+      username:
+      password:
+      dataId: seataServer.properties
