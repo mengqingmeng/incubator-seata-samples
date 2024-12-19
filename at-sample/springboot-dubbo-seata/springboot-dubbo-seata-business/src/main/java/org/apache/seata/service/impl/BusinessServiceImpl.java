@@ -16,8 +16,8 @@
  */
 package org.apache.seata.service.impl;
 
-import org.apache.seata.core.context.RootContext;
-import org.apache.seata.spring.annotation.GlobalTransactional;
+import io.seata.core.context.RootContext;
+import io.seata.spring.annotation.GlobalTransactional;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.seata.service.BusinessService;
 import org.apache.seata.service.OrderService;
@@ -45,12 +45,10 @@ public class BusinessServiceImpl implements BusinessService {
         LOGGER.info("purchase begin ... xid: " + RootContext.getXID());
         storageService.deduct(commodityCode, orderCount);
         // just test batch update
-        //stockService.batchDeduct(commodityCode, orderCount);
         orderService.create(userId, commodityCode, orderCount);
-//        if (random.nextBoolean()) {
-//            throw new RuntimeException("random exception mock!");
-//        }
-        throw new RuntimeException("random exception mock!");
+        if (random.nextBoolean()) {
+            throw new RuntimeException("random exception mock!");
+        }
     }
 
     @Override
@@ -59,7 +57,6 @@ public class BusinessServiceImpl implements BusinessService {
         LOGGER.info("purchase begin ... xid: " + RootContext.getXID());
         storageService.deduct(commodityCode, orderCount);
         // just test batch update
-        //stockService.batchDeduct(commodityCode, orderCount);
         orderService.create(userId, commodityCode, orderCount);
     }
 }

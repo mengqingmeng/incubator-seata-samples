@@ -16,13 +16,14 @@
  */
 package org.apache.seata;
 
+import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.apache.seata.service.BusinessService;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-
+@EnableDubbo
 @SpringBootApplication
 public class SpringbootDubboSeataBusinessApplication implements BeanFactoryAware {
 

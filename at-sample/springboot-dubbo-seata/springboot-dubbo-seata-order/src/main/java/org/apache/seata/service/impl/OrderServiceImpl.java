@@ -16,13 +16,16 @@
  */
 package org.apache.seata.service.impl;
 
-import org.apache.seata.core.context.RootContext;
+import io.seata.core.context.RootContext;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.DubboService;
+import org.apache.seata.entity.Order;
+import org.apache.seata.mapper.OrderMapper;
 import org.apache.seata.service.AccountService;
 import org.apache.seata.service.OrderService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -43,6 +46,8 @@ public class OrderServiceImpl implements OrderService {
 
     @DubboReference
     private AccountService accountService;
+    @Autowired
+    private OrderMapper orderMapper;
 
     @Override
     public void create(String userId, String commodityCode, int orderCount) {
@@ -58,20 +63,14 @@ public class OrderServiceImpl implements OrderService {
                 "Order Service SQL: insert into order_tbl (user_id, commodity_code, count, money) values ({}, {}, {}, {})",
                 userId, commodityCode, orderCount, orderMoney);
 
-        KeyHolder keyHolder = new GeneratedKeyHolder();
-        jdbcTemplate.update(con -> {
-            PreparedStatement pst = con.prepareStatement(
-                    "insert into order_tbl (user_id, commodity_code, count, money) values (?, ?, ?, ?)",
-                    PreparedStatement.RETURN_GENERATED_KEYS);
-            pst.setObject(1, userId);
-            pst.setObject(2, commodityCode);
-            pst.setObject(3, orderCount);
-            pst.setObject(4, orderMoney);
-            return pst;
-        }, keyHolder);
-
-
-        LOGGER.info("Order Service End ... Created " + Objects.requireNonNull(keyHolder.getKey()).longValue());
+        Order order = new Order();
+        order.setUserId(userId);
+        order.setCommodityCode(commodityCode);
+        order.setCount(orderCount);
+        order.setMoney(orderMoney);
+        orderMapper.insert(order);
+        //LOGGER.info("Order Service End ... Created " + Objects.requireNonNull(keyHolder.getKey()).longValue());
+        LOGGER.info("Order Service End,order id:{} ...  ",order.getId());
     }
 
     private int calculate(String commodityId, int orderCount) {

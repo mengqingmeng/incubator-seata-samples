@@ -18,9 +18,9 @@ spring:
         name: OrderApplication
     datasource:
         driver-class-name: com.mysql.cj.jdbc.Driver
-        url: jdbc:mysql://${mysql.address:127.0.0.1}:${mysql.port:3306}/seata?serverTimezone=Asia/Shanghai&useSSL=false&useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useOldAliasMetadataBehavior=true
+        url: jdbc:mysql://${mysql.address:127.0.0.1}:${mysql.port:3306}/seata_client?serverTimezone=Asia/Shanghai&useSSL=false&useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useOldAliasMetadataBehavior=true
         username: ${mysql.user:root}
-        password: ${mysql.password:123456}
+        password: ${mysql.password:root}
         hikari:
             connection-timeout: 30000
             idle-timeout: 600000
@@ -34,20 +34,28 @@ dubbo:
         name: ${spring.application.name}
         qos-enable: false
     registry:
-        address: multicast://224.5.6.7:1234
+        address: nacos://localhost:8848
+        register-mode: instance
     protocol:
         port: 20883
         name: dubbo
 seata:
     enabled: true
     application-id: dubbo-samples-seata
-    tx-service-group: default_tx_group
+    tx-service-group: my_test_tx_group
     service:
         vgroup-mapping:
             default_tx_group: default
         grouplist:
             default: ${seata.address:127.0.0.1}:${seata.port:8091}
     registry:
-        type: file
+        type: nacos
+        nacos:
+            server-addr: 127.0.0.1:8848
+            application: seata-server
+            group: SEATA_GROUP
     config:
-        type: file
+        type: nacos
+        nacos:
+            server-addr: 127.0.0.1:8848
+            group: SEATA_GROUP

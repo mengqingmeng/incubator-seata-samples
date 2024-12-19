@@ -16,31 +16,44 @@
  */
 package org.apache.seata.service.impl;
 
-import org.apache.seata.core.context.RootContext;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import io.seata.core.context.RootContext;
 import org.apache.dubbo.config.annotation.DubboService;
+import org.apache.seata.entity.Stock;
+import org.apache.seata.mapper.StockMapper;
 import org.apache.seata.service.StorageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.jdbc.core.JdbcTemplate;
-
-import javax.annotation.Resource;
 
 @DubboService
 public class StorageServiceImpl implements StorageService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StorageService.class);
 
-    @Resource
-    private JdbcTemplate jdbcTemplate;
+    private final StockMapper stockMapper;
+
+    public StorageServiceImpl(StockMapper stockMapper) {
+        this.stockMapper = stockMapper;
+    }
 
     @Override
     public void deduct(String commodityCode, int count) {
         LOGGER.info("Stock Service Begin ... xid: " + RootContext.getXID());
         LOGGER.info("Deducting inventory SQL: update stock_tbl set count = count - {} where commodity_code = {}", count,
                 commodityCode);
+        LambdaQueryWrapper<Stock> queryWrapper = Wrappers.<Stock>lambdaQuery()
+                .eq(Stock::getCommodityCode, commodityCode)
+                .last("limit 1");
+        Stock stock = stockMapper.selectOne(queryWrapper);
+        if (stock == null) {
+            LOGGER.warn("stock not found");
+            return;
+        }
 
-        jdbcTemplate.update("update stock_tbl set count = count - ? where commodity_code = ?",
-                count, commodityCode);
+        stock.setCount(stock.getCount() - count);
+        stockMapper.updateById(stock);
+
         LOGGER.info("Stock Service End ... ");
 
     }
@@ -51,9 +64,18 @@ public class StorageServiceImpl implements StorageService {
         LOGGER.info("Deducting inventory SQL: update stock_tbl set count = count - {} where commodity_code = {}", count,
                 commodityCode);
 
-        jdbcTemplate.batchUpdate(
-                "update stock_tbl set count = count - " + count + " where commodity_code = '" + commodityCode + "'",
-                "update stock_tbl set count = count - " + count + " where commodity_code = '" + commodityCode + "'");
+        LambdaQueryWrapper<Stock> queryWrapper = Wrappers.<Stock>lambdaQuery()
+                .eq(Stock::getCommodityCode, commodityCode)
+                .eq(Stock::getCount, count).last("limit 1");
+        Stock stock = stockMapper.selectOne(queryWrapper);
+        if (stock == null) {
+            LOGGER.warn("stock not found");
+            return;
+        }
+
+        stock.setCount(stock.getCount() - count);
+        stockMapper.updateById(stock);
+
         LOGGER.info("Stock Service End ... ");
 
     }

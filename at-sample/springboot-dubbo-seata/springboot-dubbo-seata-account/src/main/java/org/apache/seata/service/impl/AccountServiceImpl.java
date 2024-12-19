@@ -16,8 +16,12 @@
  */
 package org.apache.seata.service.impl;
 
-import org.apache.seata.core.context.RootContext;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import io.seata.core.context.RootContext;
 import org.apache.dubbo.config.annotation.DubboService;
+import org.apache.seata.entity.Account;
+import org.apache.seata.mapper.AccountMapper;
 import org.apache.seata.service.AccountService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,8 +34,11 @@ public class AccountServiceImpl implements AccountService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AccountService.class);
 
-    @Resource
-    private JdbcTemplate jdbcTemplate;
+    private final AccountMapper accountMapper;
+
+    public AccountServiceImpl(AccountMapper accountMapper) {
+        this.accountMapper = accountMapper;
+    }
 
     @Override
     public void debit(String userId, int money) {
@@ -39,7 +46,17 @@ public class AccountServiceImpl implements AccountService {
         LOGGER.info("Deducting balance SQL: update account_tbl set money = money - {} where user_id = {}", money,
                 userId);
 
-        jdbcTemplate.update("update account_tbl set money = money - ? where user_id = ?", new Object[]{money, userId});
+        LambdaQueryWrapper<Account> queryWrapper = Wrappers.<Account>lambdaQuery().eq(Account::getUserId, userId).last("limit 1");
+
+        Account account = accountMapper.selectOne(queryWrapper);
+        if (account == null) {
+            LOGGER.warn("账户不存在：{}",userId);
+            return;
+        }
+
+        account.setMoney(account.getMoney() - money);
+        accountMapper.updateById(account);
+
         LOGGER.info("Account Service End ... ");
     }
 
